@@ -1,0 +1,28 @@
+name: Build Apple Core + GameKit tgz
+
+on:
+  push:
+    branches: [ci-build]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versoes
+        run: |
+          xcodebuild -version
+          python3 --version
+          npm --version
+          xcodebuild -showsdks
+      - name: Build Core + GameKit (iOS + macOS)
+        run: yes | python3 build.py -p Core GameKit -m iOS macOS -f -nc
+      - name: Listar saida
+        run: ls -la Build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apple-unityplugins-27.0-tgz
+          path: Build/*.tgz
+          if-no-files-found: error
