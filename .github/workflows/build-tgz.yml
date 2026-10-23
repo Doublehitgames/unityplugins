@@ -7,10 +7,15 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Usar o Xcode mais novo do runner
+        run: |
+          ls -d /Applications/Xcode*.app
+          X=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$X"
       - name: Versoes
         run: |
           xcodebuild -version
@@ -18,9 +23,11 @@ jobs:
           npm --version
           xcodebuild -showsdks
       - name: Build Core + GameKit (iOS + macOS)
-        run: yes | python3 build.py -p Core GameKit -m iOS macOS -f -nc
+        run: yes Y | python3 build.py -p Core GameKit -m iOS macOS -f -nc
       - name: Listar saida
-        run: ls -la Build
+        run: |
+          ls -la Build
+          for f in Build/*.tgz; do echo "== $f"; tar -tzf "$f" | grep -E "NativeLibraries~/.*/(iOS|macOS)/" | head -20; done
       - uses: actions/upload-artifact@v4
         with:
           name: apple-unityplugins-27.0-tgz
